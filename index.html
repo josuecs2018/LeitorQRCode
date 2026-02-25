@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leitor QR Code PIX</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f4f6f9;
+    padding: 20px;
+}
+
+h2 {
+    color: #2c3e50;
+}
+
+#reader {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+}
+
+#resultado {
+    margin-top: 20px;
+    padding: 10px;
+    background: #fff;
+    border-radius: 8px;
+    word-wrap: break-word;
+    font-size: 14px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    background: #27ae60;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #219150;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📷 Leitor de QR Code PIX</h2>
+
+<div id="reader"></div>
+
+<div id="resultado"></div>
+
+<button onclick="copiarCodigo()">📋 Copiar Código PIX</button>
+
+<script>
+let codigoPix = "";
+
+function onScanSuccess(decodedText, decodedResult) {
+    codigoPix = decodedText;
+    document.getElementById("resultado").innerText = codigoPix;
+}
+
+function onScanFailure(error) {
+    // Ignora erro enquanto tenta escanear
+}
+
+let html5QrcodeScanner = new Html5QrcodeScanner(
+    "reader", { fps: 10, qrbox: 250 });
+
+html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+function copiarCodigo() {
+    if (codigoPix !== "") {
+        navigator.clipboard.writeText(codigoPix);
+        alert("Código PIX copiado com sucesso!");
+    } else {
+        alert("Nenhum código detectado ainda.");
+    }
+}
+</script>
+
+</body>
+</html>
