@@ -107,15 +107,20 @@ function onScanSuccess(decodedText) {
 // SALVAR NO FIRESTORE
 async function salvarNoFirestore(codigo) {
     try {
-        await addDoc(collection(db, "leituras_pix"), {
+        console.log("Tentando salvar:", codigo);
+
+        await addDoc(collection(db, "pixQueue"), {
             codigo: codigo,
             caixa: nomeCaixa,
+            status: "novo",
             dataHora: serverTimestamp()
         });
 
-        console.log("Salvo com sucesso!");
+        console.log("SALVO COM SUCESSO");
+        alert("Enviado para o Firestore!");
     } catch (e) {
-        console.error("Erro ao salvar: ", e);
+        console.error("ERRO AO SALVAR:", e);
+        alert("Erro ao salvar: " + e.message);
     }
 }
 
@@ -139,4 +144,5 @@ window.copiarCodigo = function() {
 </script>
 </body>
 </html>
+
 
