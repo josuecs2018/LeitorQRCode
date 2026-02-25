@@ -53,7 +53,7 @@ button:hover {
 
 <body>
 
-<h2>📷 Leitor de QR Code PIX</h2>
+<h2>📷 Leitor de QR Code PIX - Multi Caixa</h2>
 
 <div id="reader"></div>
 
@@ -61,25 +61,73 @@ button:hover {
 
 <button onclick="copiarCodigo()">📋 Copiar Código PIX</button>
 
-<script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+// CONFIG FIREBASE
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_AUTH_DOMAIN",
+  projectId: "SEU_PROJECT_ID",
+  storageBucket: "SEU_BUCKET",
+  messagingSenderId: "SEU_SENDER_ID",
+  appId: "SEU_APP_ID"
+};
+
+// INICIALIZA
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// IDENTIFICAÇÃO DO CAIXA
+let nomeCaixa = localStorage.getItem("nomeCaixa");
+if (!nomeCaixa) {
+    nomeCaixa = prompt("Digite o nome do Caixa (Ex: Caixa 1):");
+    localStorage.setItem("nomeCaixa", nomeCaixa);
+}
+
 let codigoPix = "";
+let ultimoCodigo = "";
 
-function onScanSuccess(decodedText, decodedResult) {
+// LEITURA QR
+function onScanSuccess(decodedText) {
+
+    if(decodedText === ultimoCodigo) return;
+
+    ultimoCodigo = decodedText;
     codigoPix = decodedText;
+
     document.getElementById("resultado").innerText = codigoPix;
-    enviarParaFirebase(codigoPix);
+
+    salvarNoFirestore(codigoPix);
 }
 
-function onScanFailure(error) {
-    // Ignora erro enquanto tenta escanear
+// SALVAR NO FIRESTORE
+async function salvarNoFirestore(codigo) {
+    try {
+        await addDoc(collection(db, "leituras_pix"), {
+            codigo: codigo,
+            caixa: nomeCaixa,
+            dataHora: serverTimestamp()
+        });
+
+        console.log("Salvo com sucesso!");
+    } catch (e) {
+        console.error("Erro ao salvar: ", e);
+    }
 }
+
+function onScanFailure(error) {}
 
 let html5QrcodeScanner = new Html5QrcodeScanner(
     "reader", { fps: 10, qrbox: 250 });
 
 html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 
-function copiarCodigo() {
+// COPIAR
+window.copiarCodigo = function() {
     if (codigoPix !== "") {
         navigator.clipboard.writeText(codigoPix);
         alert("Código PIX copiado com sucesso!");
@@ -87,30 +135,7 @@ function copiarCodigo() {
         alert("Nenhum código detectado ainda.");
     }
 }
-    
-</script>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCRQ-ki3OrP6JBd3T0Z1vdyHWmeooHPU1E",
-    authDomain: "leitorqrcode-a7fe0.firebaseapp.com",
-    projectId: "leitorqrcode-a7fe0",
-    storageBucket: "leitorqrcode-a7fe0.firebasestorage.app",
-    messagingSenderId: "677087917170",
-    appId: "1:677087917170:web:d226557bc66871fc9bbeeb",
-    measurementId: "G-HXPSQ142Y0"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
 </script>
 </body>
 </html>
